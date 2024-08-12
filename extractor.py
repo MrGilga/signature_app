@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from pdf2image import convert_from_path
 
-pdf_path = "/Users/dezso/Desktop/pdfexample.pdf"
+pdf_path = "/Users/dezso/Desktop/Raw_Documents_Data/pdfexample.pdf"
 pages = convert_from_path(pdf_path, 500)
 
 image = np.array(pages[0])
