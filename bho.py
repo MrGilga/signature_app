@@ -103,3 +103,39 @@ for epoch in range(num_epochs):
     # Stampa la perdita media per l'epoca corrente
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
 # %%
+# path of 2 images to test
+image1_path = 'preprocessed_real/00100001.png'
+image2_path = 'preprocessed_real/00101001.png'  
+
+# Le stesse trasformazioni utilizzate durante l'addestramento
+transform = transforms.Compose([
+    transforms.Resize((64, 64)),  # Riduci la dimensione dell'immagine
+    transforms.ToTensor(),
+])
+
+# Convert images in grayscale directly using PIL (pillow)
+image1 = Image.open(image1_path).convert('L')
+image2 = Image.open(image2_path).convert('L')
+
+# add batch dimension and move to the same device as the model if possible
+image1 = transform(image1).unsqueeze(0).to(device) 
+image2 = transform(image2).unsqueeze(0).to(device)
+
+# model in evaluation mode
+model.eval()
+
+# disable gradient computation
+with torch.no_grad():
+    output1, output2 = model(image1, image2)
+    euclidean_distance = torch.nn.functional.pairwise_distance(output1, output2)
+
+# define a threshold
+threshold = 1.0  # to change based on evaluation results performance
+
+# check if the distance is less than the threshold
+if euclidean_distance.item() < threshold:
+    print("The signature is legit")
+else:
+    print("The signature is forged")
+
+# %%
