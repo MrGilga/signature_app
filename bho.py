@@ -42,9 +42,8 @@ class SignatureDataset(Dataset):
                 for real2 in person['real'][i+1:]:
                     pairs.append([real1, real2])
                     labels.append(0)
-            for real in person['real']:
                 for forge in person['forge']:
-                    pairs.append([real, forge])
+                    pairs.append([real1, forge])
                     labels.append(1)
                     
 
