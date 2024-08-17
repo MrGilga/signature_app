@@ -24,21 +24,21 @@ class SignatureDataset(Dataset):
         self.pairs, self.labels = self.create_pairs()
     
     def create_pairs(self):
+        n_per_person = 5
         pairs = []
         labels = []
-        
-        # Coppie positive
-        for i in range(len(self.authentic_images)):
-            for j in range(i+1, len(self.authentic_images)):
-                pairs.append([self.authentic_images[i], self.authentic_images[j]])
-                labels.append(0)  # Stessa classe
-        
-        # Coppie negative
-        for i in range(len(self.authentic_images)):
-            for j in range(len(self.forged_images)):
-                pairs.append([self.authentic_images[i], self.forged_images[j]])
-                labels.append(1)  # Diverse classi
-        
+
+        assert len(self.authentic_images) == len(self.forged_images), f'{len(self.authentic_images)=} != {len(self.forged_images)=}'
+        assert len(self.authentic_images) % n_per_person == 0, f'{len(self.authentic_images)} % {n_per_person} != 0'
+
+        for c in range(0, len(self.authentic_images), n_per_person):
+            for j in range(n_per_person):
+                for i in range(j, n_per_person):
+                    pairs.append([self.authentic_images[c+j], self.authentic_images[c+i]])
+                    labels.append(0)
+                    pairs.append([self.authentic_images[c+j], self.forged_images[c+i]])
+                    labels.append(1)
+
         return pairs, labels
     
     def __len__(self):
