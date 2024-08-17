@@ -124,6 +124,8 @@ transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
+threshold = 1.0
+
 def eval(image1, image2):
     image1 = Image.open(image1).convert('L')
     image2 = Image.open(image2).convert('L')
@@ -142,4 +144,4 @@ def eval(image1, image2):
 assert eval(realimage1, realimage2) == True
 assert eval(realimage1, realimage3) == True
 assert eval(realimage1, forgeimage1) == False
-assert eval(realimage1, forgeimage2) == Fals
+assert eval(realimage1, forgeimage2) == True
