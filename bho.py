@@ -4,10 +4,11 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+
 #%%
 # Percorsi delle cartelle
-authentic_dir = 'preprocessed_forge'  # Modifica con il percorso della cartella delle firme autentiche
-forged_dir = 'preprocessed_real'       # Modifica con il percorso della cartella delle firme false
+authentic_dir = 'Dataset/dataset1/real'  # Modifica con il percorso della cartella delle firme autentiche
+forged_dir = 'Dataset/dataset1/forge'       # Modifica con il percorso della cartella delle firme false
 
 # Trasformazione per convertire le immagini in tensori
 transform = transforms.Compose([
@@ -18,27 +19,34 @@ transform = transforms.Compose([
 #%%
 class SignatureDataset(Dataset):
     def __init__(self, authentic_dir, forged_dir, transform=None):
-        self.authentic_images = [os.path.join(authentic_dir, img) for img in os.listdir(authentic_dir)]
-        self.forged_images = [os.path.join(forged_dir, img) for img in os.listdir(forged_dir)]
+        n_ppl = 12
+        self.images = [{"real":[], 'forge': []} for _ in range(n_ppl)]
+
+        for img in os.listdir(authentic_dir):
+            realid = int(img[-7:-4])
+            self.images[realid-1]['real'].append(os.path.join(authentic_dir, img))
+        for img in os.listdir(forged_dir):
+            realid = int(img[-7:-4])
+            self.images[realid-1]['forge'].append(os.path.join(forged_dir, img))
+
         self.transform = transform
         self.pairs, self.labels = self.create_pairs()
     
     def create_pairs(self):
+        n_per_person = 5
         pairs = []
         labels = []
-        
-        # Coppie positive
-        for i in range(len(self.authentic_images)):
-            for j in range(i+1, len(self.authentic_images)):
-                pairs.append([self.authentic_images[i], self.authentic_images[j]])
-                labels.append(0)  # Stessa classe
-        
-        # Coppie negative
-        for i in range(len(self.authentic_images)):
-            for j in range(len(self.forged_images)):
-                pairs.append([self.authentic_images[i], self.forged_images[j]])
-                labels.append(1)  # Diverse classi
-        
+
+        for person in self.images:
+            for i, real1 in enumerate(person['real']):
+                for real2 in person['real'][i+1:]:
+                    pairs.append([real1, real2])
+                    labels.append(0)
+                for forge in person['forge']:
+                    pairs.append([real1, forge])
+                    labels.append(1)
+                    
+
         return pairs, labels
     
     def __len__(self):
@@ -104,8 +112,8 @@ for epoch in range(num_epochs):
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
 # %%
 # path of 2 images to test
-image1_path = 'preprocessed_real/00100001.png'
-image2_path = 'preprocessed_real/00101001.png'  
+image1_path = 'Dataset/dataset1/real/00100001.png'
+image2_path = 'Dataset/dataset1/real/00101001.png'  
 
 # Le stesse trasformazioni utilizzate durante l'addestramento
 transform = transforms.Compose([
