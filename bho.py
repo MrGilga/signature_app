@@ -112,8 +112,11 @@ for epoch in range(num_epochs):
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
 # %%
 # path of 2 images to test
-image1_path = 'Dataset/dataset1/real/00100001.png'
-image2_path = 'Dataset/dataset1/real/00101001.png'  
+realimage1 = 'Dataset/dataset1/real/00100001.png'
+realimage2 = 'Dataset/dataset1/real/00101001.png'  
+realimage3 = 'Dataset/dataset1/real/00101001.png'  
+forgeimage1 = 'Dataset/dataset1/forge/02100001.png'
+forgeimage2 = 'Dataset/dataset1/forge/02101001.png'
 
 # Le stesse trasformazioni utilizzate durante l'addestramento
 transform = transforms.Compose([
@@ -121,29 +124,22 @@ transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-# Convert images in grayscale directly using PIL (pillow)
-image1 = Image.open(image1_path).convert('L')
-image2 = Image.open(image2_path).convert('L')
+def eval(image1, image2):
+    image1 = Image.open(image1).convert('L')
+    image2 = Image.open(image2).convert('L')
 
-# add batch dimension and move to the same device as the model if possible
-image1 = transform(image1).unsqueeze(0).to(device) 
-image2 = transform(image2).unsqueeze(0).to(device)
+    image1 = transform(image1).unsqueeze(0).to(device)
+    image2 = transform(image2).unsqueeze(0).to(device)
 
-# model in evaluation mode
-model.eval()
+    model.eval()
 
-# disable gradient computation
-with torch.no_grad():
-    output1, output2 = model(image1, image2)
-    euclidean_distance = torch.nn.functional.pairwise_distance(output1, output2)
+    with torch.no_grad():
+        output1, output2 = model(image1, image2)
+        euclidean_distance = torch.nn.functional.pairwise_distance(output1, output2)
 
-# define a threshold
-threshold = 1.0  # to change based on evaluation results performance
+    return euclidean_distance.item() < threshold
 
-# check if the distance is less than the threshold
-if euclidean_distance.item() < threshold:
-    print("The signature is legit")
-else:
-    print("The signature is forged")
-
-# %%
+assert eval(realimage1, realimage2) == True
+assert eval(realimage1, realimage3) == True
+assert eval(realimage1, forgeimage1) == False
+assert eval(realimage1, forgeimage2) == Fals
