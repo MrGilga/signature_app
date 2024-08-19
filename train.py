@@ -7,8 +7,8 @@ from torchvision import transforms
 
 #%%
 # Percorsi delle cartelle
-authentic_dir = 'Dataset/dataset1/real' 
-forged_dir = 'Dataset/dataset1/forge'      
+authentic_dir = 'dataset2/real' 
+forged_dir = 'dataset2/forge'      
 
 transform = transforms.Compose([
     transforms.Resize((64, 64)),  
@@ -100,3 +100,5 @@ for epoch in range(num_epochs):
         running_loss += loss.item()
     
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
+torch.save(model.state_dict(), 'model.pth')
+# %%
