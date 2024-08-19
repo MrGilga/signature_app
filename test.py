@@ -6,7 +6,7 @@ from model import SiameseNetwork
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-realimage1 = 'real/00101001.png'
+realimage1 = 'real/00100001.png'
 realimage2 = 'preprocessed_real/00100001.png' 
 realimage3 = 'real/00104001.png'
 forgeimage1 = 'preprocessed_forge/02100001.png'
@@ -19,7 +19,7 @@ transform = transforms.Compose([
 
 threshold = 1.0
 
-def eval(image1, image2, return_distance=False):
+def eval(image1, image2):
     image1 = Image.open(image1).convert('L')
     image2 = Image.open(image2).convert('L')
 
@@ -34,15 +34,13 @@ def eval(image1, image2, return_distance=False):
         output1, output2 = model(image1, image2)
         euclidean_distance = torch.nn.functional.pairwise_distance(output1, output2)
 
-    if return_distance:
-        return euclidean_distance.item()
-    return euclidean_distance.item() < threshold
+    return euclidean_distance.item()
 
 
-print("Euclidean distance between realimage1 and realimage2:", eval(realimage1, realimage2, return_distance=True))
-print("Euclidean distance between realimage1 and realimage3:", eval(realimage1, realimage3, return_distance=True))
-print("Euclidean distance between realimage1 and forgeimage1:", eval(realimage1, forgeimage1, return_distance=True))
-print("Euclidean distance between realimage1 and forgeimage2:", eval(realimage1, forgeimage2, return_distance=True))
+print("Euclidean distance between realimage1 and realimage2:", eval(realimage1, realimage2))
+print("Euclidean distance between realimage1 and realimage3:", eval(realimage1, realimage3))
+print("Euclidean distance between realimage1 and forgeimage1:", eval(realimage1, forgeimage1))
+print("Euclidean distance between realimage1 and forgeimage2:", eval(realimage1, forgeimage2))
 
 
 # %%
