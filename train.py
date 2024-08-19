@@ -7,12 +7,11 @@ from torchvision import transforms
 
 #%%
 # Percorsi delle cartelle
-authentic_dir = 'Dataset/dataset1/real'  # Modifica con il percorso della cartella delle firme autentiche
-forged_dir = 'Dataset/dataset1/forge'       # Modifica con il percorso della cartella delle firme false
+authentic_dir = 'Dataset/dataset1/real' 
+forged_dir = 'Dataset/dataset1/forge'      
 
-# Trasformazione per convertire le immagini in tensori
 transform = transforms.Compose([
-    transforms.Resize((64, 64)),  # Riduci la dimensione dell'immagine
+    transforms.Resize((64, 64)),  
     transforms.ToTensor(),
 ])
 
@@ -57,7 +56,7 @@ class SignatureDataset(Dataset):
         image2_path = self.pairs[idx][1]
         label = self.labels[idx]
         
-        image1 = Image.open(image1_path).convert('L')  # Converti in scala di grigi se non lo è già
+        image1 = Image.open(image1_path).convert('L')  
         image2 = Image.open(image2_path).convert('L')
         
         if self.transform:
@@ -66,24 +65,20 @@ class SignatureDataset(Dataset):
         
         return image1, image2, torch.tensor(label, dtype=torch.float32)
 #%%
-# Creazione del dataset
 dataset = SignatureDataset(authentic_dir, forged_dir, transform=transform)
 
-# Creazione del DataLoader
 dataloader = DataLoader(dataset, shuffle=True, batch_size=32)
 
 # %%
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 import torch.optim as optim
 from model import SiameseNetwork, ContrastiveLoss
-# Inizializza il modello
 model = SiameseNetwork().to(device)
 
-# Definisci la funzione di perdita e l'ottimizzatore
 criterion = ContrastiveLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 # %%
-num_epochs = 5  # Puoi regolare questo numero in base alle tue esigenze
+num_epochs = 5 
 
 for epoch in range(num_epochs):
     model.train()
@@ -93,55 +88,15 @@ for epoch in range(num_epochs):
         img1, img2, label = data
         img1, img2, label = img1.to(device), img2.to(device), label.to(device)
         
-        optimizer.zero_grad()  # Resetta i gradienti
+        optimizer.zero_grad() 
 
-        # Forward pass: calcola le feature per entrambe le immagini
         output1, output2 = model(img1, img2)
         
-        # Calcola la perdita
         loss = criterion(output1, output2, label)
         
-        # Backward pass e ottimizzazione
         loss.backward()
         optimizer.step()
         
-        # Accumula la perdita
         running_loss += loss.item()
     
-    # Stampa la perdita media per l'epoca corrente
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(dataloader):.4f}')
-# %%
-# path of 2 images to test
-realimage1 = 'Dataset/dataset1/real/00100001.png'
-realimage2 = 'Dataset/dataset1/real/00101001.png'  
-realimage3 = 'Dataset/dataset1/real/00101001.png'  
-forgeimage1 = 'Dataset/dataset1/forge/02100001.png'
-forgeimage2 = 'Dataset/dataset1/forge/02101001.png'
-
-# Le stesse trasformazioni utilizzate durante l'addestramento
-transform = transforms.Compose([
-    transforms.Resize((64, 64)),  # Riduci la dimensione dell'immagine
-    transforms.ToTensor(),
-])
-
-threshold = 1.0
-
-def eval(image1, image2):
-    image1 = Image.open(image1).convert('L')
-    image2 = Image.open(image2).convert('L')
-
-    image1 = transform(image1).unsqueeze(0).to(device)
-    image2 = transform(image2).unsqueeze(0).to(device)
-
-    model.eval()
-
-    with torch.no_grad():
-        output1, output2 = model(image1, image2)
-        euclidean_distance = torch.nn.functional.pairwise_distance(output1, output2)
-
-    return euclidean_distance.item() < threshold
-
-assert eval(realimage1, realimage2) == True
-assert eval(realimage1, realimage3) == True
-assert eval(realimage1, forgeimage1) == False
-assert eval(realimage1, forgeimage2) == True
