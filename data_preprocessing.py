@@ -1,13 +1,18 @@
 import cv2
 import os
 import numpy as np
+from pathlib import Path
 
-project_dir = '/Users/dezso/Documents/GitHub/signature_app/'
-forge_dir = os.path.join(project_dir, 'forge')
-real_dir = os.path.join(project_dir, 'real')
+current_file_directory = Path(__file__).parent
+preprocessing_dir_path = Path(current_file_directory / "output" / "preprocessed_signatures")
+os.makedirs(preprocessing_dir_path, exist_ok=True)
 
-output_forge_dir = os.path.join(project_dir, 'preprocessed_forge')
-output_real_dir = os.path.join(project_dir, 'preprocessed_real')
+signature_path = Path(current_file_directory / "resources" / "datasets" / "cedar_signatures")
+forge_dir = Path(signature_path, 'full_forg')
+real_dir = Path(signature_path, 'full_org')
+
+output_forge_dir = os.path.join(preprocessing_dir_path, 'preprocessed_forge')
+output_real_dir = os.path.join(preprocessing_dir_path, 'preprocessed_real')
 
 os.makedirs(output_forge_dir, exist_ok=True)
 os.makedirs(output_real_dir, exist_ok=True)
