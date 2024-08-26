@@ -4,12 +4,9 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+import config
 
-#%%
-# Percorsi delle cartelle
-authentic_dir = 'dataset2/real' 
-forged_dir = 'dataset2/forge'      
-
+#%%      
 transform = transforms.Compose([
     transforms.Resize((64, 64)),  
     transforms.ToTensor(),
@@ -65,8 +62,7 @@ class SignatureDataset(Dataset):
         
         return image1, image2, torch.tensor(label, dtype=torch.float32)
 #%%
-dataset = SignatureDataset(authentic_dir, forged_dir, transform=transform)
-
+dataset = SignatureDataset(config.test_dataset_config.test_dataset_2_output_real_dir, config.test_dataset_config.test_dataset_2_output_forge_dir, transform=transform)
 dataloader = DataLoader(dataset, shuffle=True, batch_size=32)
 
 # %%

@@ -2,20 +2,7 @@ import cv2
 import os
 import numpy as np
 from pathlib import Path
-
-current_file_directory = Path(__file__).parent
-preprocessing_dir_path = Path(current_file_directory / "output" / "preprocessed_signatures")
-os.makedirs(preprocessing_dir_path, exist_ok=True)
-
-signature_path = Path(current_file_directory / "resources" / "datasets" / "cedar_signatures")
-forge_dir = Path(signature_path, 'full_forg')
-real_dir = Path(signature_path, 'full_org')
-
-output_forge_dir = os.path.join(preprocessing_dir_path, 'preprocessed_forge')
-output_real_dir = os.path.join(preprocessing_dir_path, 'preprocessed_real')
-
-os.makedirs(output_forge_dir, exist_ok=True)
-os.makedirs(output_real_dir, exist_ok=True)
+import config
 
 target_size = (255, 255)
 
@@ -47,14 +34,16 @@ def preprocess_image(image_path, output_path, target_size):
     print(f"Immagine preprocessata salvata in: {output_path}")
 
 if __name__ == "__main__":
-    for filename in os.listdir(forge_dir):
+    # forged signatures
+    for filename in os.listdir(config.test_dataset_config.test_dataset_2_forge_dir):
         if filename.endswith(('.png', '.jpg', '.jpeg')):
-            image_path = os.path.join(forge_dir, filename)
-            output_path = os.path.join(output_forge_dir, filename)
+            image_path = os.path.join(config.test_dataset_config.test_dataset_2_forge_dir, filename)
+            output_path = os.path.join(config.test_dataset_config.test_dataset_2_output_forge_dir, filename)
             preprocess_image(image_path, output_path, target_size)
 
-    for filename in os.listdir(real_dir):
+    # original signatures
+    for filename in os.listdir(config.test_dataset_config.test_dataset_2_real_dir):
         if filename.endswith(('.png', '.jpg', '.jpeg')):
-            image_path = os.path.join(real_dir, filename)
-            output_path = os.path.join(output_real_dir, filename)
+            image_path = os.path.join(config.test_dataset_config.test_dataset_2_real_dir, filename)
+            output_path = os.path.join(config.test_dataset_config.test_dataset_2_output_real_dir, filename)
             preprocess_image(image_path, output_path, target_size)
